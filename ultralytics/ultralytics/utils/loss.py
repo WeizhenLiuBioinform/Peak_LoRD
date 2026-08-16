@@ -445,6 +445,126 @@ class v8SegmentationLoss(v8DetectionLoss):
         return loss / fg_mask.sum()
 
 
+class v8SemiDetectionLoss(v8DetectionLoss):
+    """Criterion class for semi-supervised detection loss (no mask branch)."""
+
+    def __init__(self, model):
+        """Initialize with a de-paralleled model."""
+        super().__init__(model)
+
+    def new_unsup_loss(self, preds, batch):
+        """Calculate detection loss using pseudo-label targets from the unsup batch."""
+        loss = torch.zeros(3, device=self.device)  # box, cls, dfl
+        feats = preds[1] if isinstance(preds, tuple) else preds
+        pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
+            (self.reg_max * 4, self.nc), 1
+        )
+
+        pred_scores = pred_scores.permute(0, 2, 1).contiguous()
+        pred_distri = pred_distri.permute(0, 2, 1).contiguous()
+
+        dtype = pred_scores.dtype
+        batch_size = pred_scores.shape[0]
+        imgsz = torch.tensor(feats[0].shape[2:], device=self.device, dtype=dtype) * self.stride[0]
+        anchor_points, stride_tensor = make_anchors(feats, self.stride, 0.5)
+
+        # Targets from pseudo-label batch
+        batch_idx = batch["batch_idx"].view(-1, 1)
+        targets = torch.cat((batch_idx, batch["cls"].view(-1, 1), batch["bboxes"]), 1)
+        targets = self.preprocess(targets.to(self.device), batch_size, scale_tensor=imgsz[[1, 0, 1, 0]])
+        gt_labels, gt_bboxes = targets.split((1, 4), 2)
+        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0.0)
+
+        pred_bboxes = self.bbox_decode(anchor_points, pred_distri)
+
+        _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
+            pred_scores.detach().sigmoid(),
+            (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
+            anchor_points * stride_tensor,
+            gt_labels,
+            gt_bboxes,
+            mask_gt,
+        )
+
+        target_scores_sum = max(target_scores.sum(), 1)
+
+        # Cls loss
+        loss[1] = self.bce(pred_scores, target_scores.to(dtype)).sum() / target_scores_sum
+
+        # Bbox loss
+        if fg_mask.sum():
+            target_bboxes /= stride_tensor
+            loss[0], loss[2] = self.bbox_loss(
+                pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask
+            )
+
+        loss[0] *= self.hyp.box
+        loss[1] *= self.hyp.cls
+        loss[2] *= self.hyp.dfl
+
+        return loss.sum() * batch_size, loss.detach()
+
+    def unsup_loss(self, preds, pseudo_label):
+        """Legacy unsupervised loss interface (converts pseudo labels then delegates to new_unsup_loss)."""
+        feats = preds[1] if isinstance(preds, tuple) else preds
+        batch_size = feats[0].shape[0]
+        gt_bboxes, gt_labels, mask_gt = self.convert_pseudo_labels(pseudo_label, batch_size)
+
+        dtype = feats[0].dtype
+        imgsz = torch.tensor(feats[0].shape[2:], device=self.device, dtype=dtype) * self.stride[0]
+        anchor_points, stride_tensor = make_anchors(feats, self.stride, 0.5)
+
+        batch_idx_list = []
+        cls_list = []
+        bbox_list = []
+        for b in range(batch_size):
+            for j in range(gt_bboxes.shape[1]):
+                if mask_gt[b, j].item() > 0:
+                    batch_idx_list.append(b)
+                    cls_list.append(gt_labels[b, j].item())
+                    bbox_list.append(gt_bboxes[b, j])
+
+        device = feats[0].device
+        if len(batch_idx_list) > 0:
+            unsup_batch = {
+                "batch_idx": torch.tensor(batch_idx_list, device=device),
+                "cls": torch.tensor(cls_list, device=device).unsqueeze(-1),
+                "bboxes": torch.stack(bbox_list).to(device),
+            }
+        else:
+            unsup_batch = {
+                "batch_idx": torch.empty(0, device=device),
+                "cls": torch.empty(0, 1, device=device),
+                "bboxes": torch.empty(0, 4, device=device),
+            }
+        return self.new_unsup_loss(preds, unsup_batch)
+
+    def convert_pseudo_labels(self, pseudo_labels, batch_size):
+        """Convert pseudo label list to gt_bboxes, gt_labels, mask_gt tensors."""
+        device = self.device
+        n_max_boxes = 0
+        cls = []
+        for i in range(batch_size):
+            p = pseudo_labels[i]
+            num_boxes = p.shape[0] if isinstance(p, torch.Tensor) else p[0].shape[0]
+            n_max_boxes = max(n_max_boxes, num_boxes)
+
+        for i in range(batch_size):
+            p = pseudo_labels[i]
+            tmp_cls = p if isinstance(p, torch.Tensor) else p[0]
+            x = tmp_cls.shape[0]
+            box = tmp_cls[:, :4]
+            tmp = torch.zeros((n_max_boxes, 4), dtype=tmp_cls.dtype)
+            valid_len = min(x, n_max_boxes)
+            tmp[:valid_len, :] = box[:valid_len, :]
+            cls.append(tmp)
+        clses = torch.cat(cls, dim=0)
+        gt_bboxes = clses.reshape(batch_size, n_max_boxes, 4).to(device)
+        gt_labels = torch.zeros(batch_size, n_max_boxes, 1).to(device)
+        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0.0).to(device)
+        return gt_bboxes, gt_labels, mask_gt
+
+
 class v8PoseLoss(v8DetectionLoss):
     """Criterion class for computing training losses."""
 

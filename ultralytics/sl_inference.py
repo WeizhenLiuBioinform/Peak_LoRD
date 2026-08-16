@@ -800,16 +800,16 @@ def get_args():
     #                     default='weights/best.pt',
     #                     help='path to peak detection model')
     parser.add_argument('--model',
-                        default=os.environ.get('PEAK_MODEL_PATH', 'weights/best.pt'),
+                        default="D:\\work\\peak detection\\peakLord\\Peak_LoRD\\best.pt",
                         help='path to peak detection model')
     parser.add_argument('--datadir',
-                        default=os.environ.get('PEAK_MZML_DIR', './data/mzml'))
+                        default="D:\\work\\peak detection\\peakLord\\dataset\\")
     # parser.add_argument('--datadir',
     #                     default='./data/mzml')
     parser.add_argument('--img_tmp_path',
-                        default=os.environ.get('PEAK_TMP_IMAGE', './output/tmp.jpg'))
+                        default="D:\\work\\peak detection\\peakLord\\dataset\\tmp.jpg")
     parser.add_argument('--save_csv', action='store_true', default=True)
-    parser.add_argument('--csv_save_dir', type=str, default=os.environ.get('PEAK_CSV_DIR', './output/csv'),
+    parser.add_argument('--csv_save_dir', type=str, default="D:\\work\\peak detection\\peakLord\\csv\\",
                         help='directory to save csv files; default datadir/ours/csv')
     parser.add_argument('--noise_thresold', type=float, default=1000)
 

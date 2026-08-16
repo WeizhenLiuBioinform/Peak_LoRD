@@ -1,7 +1,7 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 # Default training settings and hyperparameters for medium-augmentation COCO training
 
-task: segment # (str) YOLO task, i.e. detect, segment, classify, pose, obb
+task: detect # (str) YOLO task, i.e. detect, segment, classify, pose, obb, semi_segment, semi_detect
 mode: train # (str) YOLO mode, i.e. train, val, predict, export, track, benchmark
 
 # Train settings -------------------------------------------------------------------------------------------------------
@@ -39,9 +39,8 @@ multi_scale: False # (bool) Whether to use multiscale during training
 # Segmentation
 overlap_mask: False # (bool) merge object masks into a single image mask during training (segment train only)
 mask_ratio: 4 # (int) mask downsample ratio (segment train only)
-# SemiSegmentation
-overlap_mask: False # (bool) merge object masks into a single image mask during training (segment train only)
-mask_ratio: 4 # (int) mask downsample ratio (segment train only)
+# SemiDetection
+# overlap_mask and mask_ratio not needed for detection tasks
 # Classification
 dropout: 0.0 # (float) use dropout regularization (classify train only)
 

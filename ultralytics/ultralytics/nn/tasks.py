@@ -71,6 +71,7 @@ from ultralytics.utils.loss import (
     v8OBBLoss,
     v8PoseLoss,
     v8SegmentationLoss,
+    v8SemiDetectionLoss,
     v8SemiSegmentationLoss,
 )
 from ultralytics.utils.ops import make_divisible
@@ -453,6 +454,51 @@ class SemiSegmentationModel(DetectionModel):
         else:
             preds = self.forward(batch["img"]) if preds is None else preds
         return preds, None
+
+class SemiDetectionModel(DetectionModel):
+    """YOLO detection model for semi-supervised learning (no mask branch)."""
+
+    def __init__(self, cfg="yolov8n.yaml", ch=3, nc=None, verbose=True):
+        """Initialize SemiDetectionModel with detection config."""
+        super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
+
+    def init_criterion(self):
+        """Initialize the loss criterion for the semi-detection model."""
+        return v8SemiDetectionLoss(self)
+
+    def init_unsup_criterion(self):
+        """Initialize the unsupervised loss criterion."""
+        return v8SemiDetectionLoss(self)
+
+    def unsup_loss(self, preds, pseudo_labels):
+        """Compute unsupervised loss from pseudo labels (legacy interface)."""
+        if getattr(self, "unsup_criterion", None) is None:
+            self.unsup_criterion = self.init_unsup_criterion()
+        return self.unsup_criterion.unsup_loss(preds, pseudo_labels)
+
+    def new_unsup_loss(self, preds, unsup_batch):
+        """Compute unsupervised detection loss from pseudo-label batch."""
+        if getattr(self, "unsup_criterion", None) is None:
+            self.unsup_criterion = self.init_unsup_criterion()
+        return self.unsup_criterion.new_unsup_loss(preds, unsup_batch)
+
+    def forward(self, x, *args, **kwargs):
+        """Forward pass: labeled data -> loss, unlabeled data -> raw predictions."""
+        if isinstance(x, dict):
+            if x.get('is_label', True):
+                return self.loss(x, *args, **kwargs)
+            else:
+                return self.pseudo_label(x, *args, **kwargs)
+        return self.predict(x, *args, **kwargs)
+
+    def pseudo_label(self, batch, preds=None):
+        """Return raw predictions for unlabeled data (no loss computation)."""
+        if self.model.training:
+            preds = self.forward(batch["img"]) if preds is None else preds
+        else:
+            preds = self.forward(batch["img"]) if preds is None else preds
+        return preds, None
+
 
 class PoseModel(DetectionModel):
     """YOLOv8 pose model."""

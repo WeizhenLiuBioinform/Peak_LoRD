@@ -1,0 +1,13 @@
+# Model weights
+*.pt
+
+# IDE
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# OS
+.DS_Store
+Thumbs.db

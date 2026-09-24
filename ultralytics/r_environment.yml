@@ -1,0 +1,12 @@
+# R packages required by align.R (merged into the same conda env as Python):
+#   conda env update -n <env_name> -f ultralytics/r_environment.yml
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base
+  - r-optparse
+  - bioconductor-xcms
+  - bioconductor-msnbase
+  - bioconductor-biocparallel

@@ -19,6 +19,7 @@ import torchvision
 import subprocess
 
 from ultralytics.models import yolo
+from ultralytics.models.yolo.semi_detect.val import SemiDetectionValidator
 from ultralytics.nn.tasks import SemiDetectionModel
 from ultralytics.utils.ops import xywh2xyxy
 from ultralytics.utils import ops
@@ -92,13 +93,13 @@ class SemiDetectionTrainer(yolo.detect.DetectionTrainer):
     def get_validator(self):
         """Return a DetectionValidator for semi-supervised detection."""
         self.loss_names = "box_loss", "cls_loss", "dfl_loss"
-        return yolo.detect.DetectionValidator(
+        return SemiDetectionValidator(
             self.test_loader, save_dir=self.save_dir, args=self.args, _callbacks=self.callbacks
         )
 
     def get_teacher_validator(self):
         """Return a DetectionValidator for teacher model validation."""
-        return yolo.detect.DetectionValidator(
+        return SemiDetectionValidator(
             self.test_loader, save_dir=self.save_dir, args=self.args, _callbacks=self.callbacks,
             teacher_model=self.teacher_model
         )
@@ -347,7 +348,7 @@ class SemiDetectionTrainer(yolo.detect.DetectionTrainer):
                             unsup_s = self.strong_aug(unsup_s)
 
                         unlabel_pred, _ = self.model(unsup_s)
-                        self.unsup_loss, unsup_loss_items = self.model.module.new_unsup_loss(unlabel_pred, unsup_s)
+                        self.unsup_loss, unsup_loss_items = (self.model.module if hasattr(self.model, "module") else self.model).new_unsup_loss(unlabel_pred, unsup_s)
 
                         # Step 3: Student generates pseudo-labels, teacher learns
                         with torch.no_grad():
@@ -362,7 +363,7 @@ class SemiDetectionTrainer(yolo.detect.DetectionTrainer):
                             unsup_s1 = self.strong_aug(unsup_s1)
 
                         unlabel_pred1, _ = self.teacher_model(unsup_s1)
-                        self.unsup_loss1, unsup_loss_items1 = self.teacher_model.module.new_unsup_loss(unlabel_pred1, unsup_s1)
+                        self.unsup_loss1, unsup_loss_items1 = (self.teacher_model.module if hasattr(self.teacher_model, "module") else self.teacher_model).new_unsup_loss(unlabel_pred1, unsup_s1)
 
                         if self.auto_train:
                             self.total_loss = self.unsup_loss
@@ -486,6 +487,10 @@ class SemiDetectionTrainer(yolo.detect.DetectionTrainer):
         if self.teacher_model is not None:
             teacher_ckpt = self.setup_teacher_model()
             self.teacher_model = self.teacher_model.to(self.device)
+        else:
+            # unsup_model=None: teacher model is copy-initialized from the student model
+            teacher_ckpt = None
+            self.teacher_model = deepcopy(self.model).to(self.device)
 
         self.best_student = None
         self.set_model_attributes()

@@ -390,7 +390,7 @@ class SemiSegmentationTrainer(yolo.detect.DetectionTrainer):
                             
                             
                         unlabel_pred, _ = self.model(unsup_s)
-                        self.unsup_loss, unsup_loss_items = self.model.module.new_unsup_loss(unlabel_pred, unsup_s)#教师产生伪标签，学生学习
+                        self.unsup_loss, unsup_loss_items = (self.model.module if hasattr(self.model, "module") else self.model).new_unsup_loss(unlabel_pred, unsup_s)#教师产生伪标签，学生学习
                         #step3：学生模型预测伪标签监督教师
                         with torch.no_grad():
                             self.teacher_model.train()
@@ -407,7 +407,7 @@ class SemiSegmentationTrainer(yolo.detect.DetectionTrainer):
                             # if RANK in {-1,0} and (epoch % 5 == 0):
                             #     visual_augment(unsup_s,"student_vis",epoch)  #学生模型伪标签可视化
                         unlabel_pred1, _ = self.teacher_model(unsup_s1)
-                        self.unsup_loss1, unsup_loss_items1 = self.teacher_model.module.new_unsup_loss(unlabel_pred1,unsup_s1)#学生产生伪标签，教师学习
+                        self.unsup_loss1, unsup_loss_items1 = (self.teacher_model.module if hasattr(self.teacher_model, "module") else self.teacher_model).new_unsup_loss(unlabel_pred1,unsup_s1)#学生产生伪标签，教师学习
 
       
                     #self.unsup_loss = self.model.unsup_loss(unlabel_pred, pseudo_label)
@@ -579,7 +579,11 @@ class SemiSegmentationTrainer(yolo.detect.DetectionTrainer):
         if self.teacher_model is not None:
             teacher_ckpt = self.setup_teacher_model()
             self.teacher_model = self.teacher_model.to(self.device)
-            
+        else:
+            # unsup_model=None: teacher model is copy-initialized from the student model
+            teacher_ckpt = None
+            self.teacher_model = deepcopy(self.model).to(self.device)
+
 
         self.best_student = None
         self.set_model_attributes()

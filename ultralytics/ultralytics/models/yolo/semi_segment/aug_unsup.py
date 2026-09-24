@@ -100,7 +100,7 @@ class StrongNoiseBlurAug:
             new_cls = torch.cat([new_cls,item['cls']])
             if not isinstance(item['idx'],list):
                 new_idx = torch.cat([new_idx,item['idx']])
-        batch["img"] = torch.stack(new_images)
+        batch["img"] = torch.stack(new_images).to(device)
         batch["bboxes"] = new_bboxes
         batch["masks"] = new_masks
         batch['cls'] = new_cls
@@ -133,7 +133,7 @@ class WeekAugmentation:
             images_aug.append(aug)
             is_horizons.append(is_horizon)
 
-        batch["img"] = torch.stack(images_aug)
+        batch["img"] = torch.stack(images_aug).to(images.device)
         batch["aug_type"] = is_horizons
         return batch,is_horizons
     

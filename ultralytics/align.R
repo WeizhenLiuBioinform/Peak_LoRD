@@ -21,7 +21,7 @@ option_list <- list(
               help="Directory containing peak CSV files (one CSV per sample) OR one CSV with sample column", metavar="DIR"),
   make_option(c("--out_dir"), type="character", default=Sys.getenv("PEAK_OUT_DIR", "./output"),
               help="Output directory", metavar="DIR"),
-  make_option(c("--rt_in_minutes"), action="store_true", default=TRUE,
+  make_option(c("--rt_in_minutes"), action="store_true", default=FALSE,
               help="If set, the rt values in CSV are in minutes and will be converted to seconds"),
   make_option(c("--retcor_method"), type="character", default="obiwarp",
               help="RT correction method: obiwarp or peakgroups", metavar="METHOD"),

@@ -29,30 +29,24 @@ cd peak_lord
 conda create -n peaklord python=3.11 -y
 conda activate peaklord
 
-# 3. (Optional but recommended) Install a CUDA build of PyTorch
-#    `pip install -e .` from PyPI installs the CPU-only torch by default.
-#    For GPU training/inference, install the CUDA build from the PyTorch index first.
-#    Choose the version that fits your platform; e.g. on CentOS 7 (glibc < 2.28)
-#    the newest installable torch is 2.6.0 (see "Notes for old systems" below).
-pip install torch==2.6.0+cu124 torchvision==0.21.0+cu124 --index-url https://download.pytorch.org/whl/cu124
+# 3. (Recommended for GPU) Install a CUDA build of PyTorch BEFORE step 4.
+#    `pip install -e ultralytics/` alone pulls the latest CPU-only torch from PyPI
+#    (PyPI has no CUDA wheels for Windows). Pick the index for your CUDA driver at
+#    https://pytorch.org/get-started/locally/ ; e.g. for CUDA 12.8+:
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#    CPU-only users can skip this step.
 
 # 4. Install the Python package (editable)
 pip install -e ultralytics/
 
-# 5. Merge the R environment into the same conda env (r-base + xcms + MSnbase + BiocParallel)
+# 5. Merge the R environment into the same conda env (r-base + optparse + xcms + MSnbase + BiocParallel)
 conda env update -n peaklord -f ultralytics/r_environment.yml
+# Bioconductor packages are not on conda channels for Windows (bioconda = Linux/macOS only),
+# so install them from inside R via BiocManager (also works on Linux/macOS):
+Rscript -e 'install.packages("BiocManager")'
+Rscript -e 'BiocManager::install(c("xcms", "MSnbase", "BiocParallel"), update = FALSE, ask = FALSE)'
+# (BiocManager downloads many dependencies and can take 10-30 minutes.)
 ```
-
-### Notes for old systems (e.g. CentOS 7, glibc < 2.28)
-- Many PyPI wheels (scipy >= 1.17, pandas >= 3.0, torch >= 2.7) require glibc >= 2.28 and cannot be installed on CentOS 7. If `pip install -e ultralytics/` fails while resolving scipy/pandas, pre-install older wheels before step 4:
-  ```bash
-  pip install "scipy<1.17" "pandas<3.0"
-  ```
-- If loading R packages fails with `version 'OMP_5.0' not found ... libgomp.so.1`, the system libgomp is too old. Point the environment to its own (newer) libgomp:
-  ```bash
-  ln -sf libgomp.so.1.0.0 "$CONDA_PREFIX/lib/libgomp.so.1"
-  ```
-  (On modern distributions this is usually not needed.)
 
 ### Verify the installation
 ```bash

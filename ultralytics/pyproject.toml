@@ -80,6 +80,7 @@ dependencies = [
     "pymzml>=2.5.0", # mzML parsing (sl_inference.py)
     "bintrees>=2.2.0", # FastAVLTree for ROI/EIC building (sl_inference.py)
     "albumentations>=1.4.0", # weak/strong augmentation (semi_detect/semi_segment)
+    "stringzilla==5.1.1", # albucore/albumentations dep; 5.1.2 has no win_amd64 cp311 wheel (only arm64)
     "ultralytics-thop>=2.0.0", # FLOPs computation https://github.com/ultralytics/thop
 ]
 

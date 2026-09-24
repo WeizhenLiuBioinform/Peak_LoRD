@@ -28,13 +28,14 @@ class SemiSegmentationValidator(DetectionValidator):
         ```
     """
 
-    def __init__(self, dataloader=None, save_dir=None, pbar=None, args=None, _callbacks=None):
+    def __init__(self, dataloader=None, save_dir=None, pbar=None, args=None, _callbacks=None, teacher_model=None):
         """Initialize SegmentationValidator and set task to 'segment', metrics to SegmentMetrics."""
         super().__init__(dataloader, save_dir, pbar, args, _callbacks)
         self.plot_masks = None
         self.process = None
         self.args.task = "segment"
         self.metrics = SegmentMetrics(save_dir=self.save_dir, on_plot=self.on_plot)
+        self.teacher_model = teacher_model
 
     def preprocess(self, batch):
         """Preprocesses batch by converting masks to float and sending to device."""

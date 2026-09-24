@@ -62,6 +62,7 @@ from ultralytics.utils.torch_utils import (
 )
 from ultralytics.models.yolo.semi_segment.aug_unsup import StrongNoiseBlurAug,WeekAugmentation,HorizonFlip
 from ultralytics.models.yolo.semi_segment.utils import draw_instances,visualize_instance_segmentation
+from ultralytics.models.yolo.semi_segment.val import SemiSegmentationValidator
 
 
 class SemiSegmentationTrainer(yolo.detect.DetectionTrainer):
@@ -945,7 +946,7 @@ class SemiSegmentationTrainer(yolo.detect.DetectionTrainer):
     
     def get_teacher_validator(self):
         self.loss_names = "box_loss", "seg_loss", "cls_loss", "dfl_loss"
-        return yolo.segment.SegmentationValidator(
+        return SemiSegmentationValidator(
             self.test_loader, save_dir=self.save_dir, args=self.args, _callbacks=self.callbacks, teacher_model=self.teacher_model
         )
 

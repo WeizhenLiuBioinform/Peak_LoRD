@@ -98,11 +98,13 @@ python train_detect_ssl.py
 - `self_train`: `False` = standard semi-supervised (labeled + unlabeled), `True` = self-training on unlabeled data only.
 
 ### 3. Semi-supervised segmentation training — `train_ssl.py`
-Same pattern as above (`task="semi_segment"`, e.g. `model="yolo11-seg.yaml"`). Edit the `overrides` dict (the script currently contains example absolute paths — replace them with your own), then:
+Same pattern as above (`task="semi_segment"`, e.g. `model="yolo11-seg.yaml"`). Edit the `overrides` dict (paths are placeholders — replace them with your own), then:
 ```bash
 cd ultralytics
 python train_ssl.py
 ```
+
+**Note**: Peak_LoRD supports both detection and segmentation models for training, and the two work identically during inference.
 
 ### 4. RT alignment across samples — `align.R`
 Imports the peak CSVs produced by `sl_inference.py` into XCMS and performs RT correction (obiwarp), peak grouping and fillPeaks. CSV columns required: `mz, mzmin, mzmax, rt, rtmin, rtmax, into, maxo`. `rt` must be in **seconds**.

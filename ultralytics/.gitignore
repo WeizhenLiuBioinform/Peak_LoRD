@@ -149,6 +149,7 @@ wandb/
 weights/
 *.weights
 *.pt
+!peak_lord.pt
 *.pb
 *.onnx
 *.engine

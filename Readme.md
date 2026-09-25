@@ -68,7 +68,7 @@ python sl_inference.py \
   --csv_save_dir /path/to/csv_dir
 ```
 - `--datadir`: directory containing the input `.mzML` files (one CSV is written per file).
-- `--model`: YOLO weights for peak detection (e.g. a model trained with `train_detect_ssl.py`).
+- `--model`: YOLO weights for peak detection (e.g. a model trained with `train_detect_ssl.py`). The pretrained Peak-LoRD model is included at `ultralytics/peak_lord.pt`.
 - `--csv_save_dir`: output directory for the peak CSVs (columns: `mz, rt, mzmin, mzmax, rtmin, rtmax, into, maxo, sample, conf`).
 
 #### Main parameters

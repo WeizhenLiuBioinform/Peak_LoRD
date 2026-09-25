@@ -1,7 +1,7 @@
 # from ultralytics import YOLO
 
-# #model = YOLO("/data1/zhaohaowei/peak_detection/yolo/ultralytics/yolo11m-seg.pt")  # load a pretrained model (recommended for training)
-# model = YOLO("/data1/zhaohaowei/peak_detection/yolo/ultralytics/runs/segment/seg-with-pre-train/weights/best.pt") #加载训练好的全监督训练集
+# #model = YOLO("yolo11m-seg.pt")  # load a pretrained model (recommended for training)
+# model = YOLO("path/to/pretrained.pt") #加载训练好的全监督训练集
 # #model = YOLO("yolo11m-seg.yaml") #从头训练模型
 
 # # Train the model with 2 GPUs
@@ -18,9 +18,9 @@ from ultralytics.models.yolo.semi_segment import SemiSegmentationTrainer  # 替�
 # 在一切导入之前设置环境变量
 overrides = dict(
     task="semi_segment", 
-    model="/data1/zhaohaowei/peak_detection/yolo/ultralytics/yolo11m_pre_new.pt",
-    #unsup_model = "/data1/zhaohaowei/peak_detection/yolo/ultralytics/yolo11m-seg.pt",
-    unsup_model = "/data1/zhaohaowei/peak_detection/yolo/ultralytics/runs/semi_segment/train13/weights/best.pt",
+    model="yolo11m-seg.yaml",
+    #unsup_model = "path/to/pretrained.pt",
+    unsup_model = "path/to/teacher.pt",
     data="dataset.yaml",
     unsup_data="unsup_dataset.yaml",
     imgsz=640,

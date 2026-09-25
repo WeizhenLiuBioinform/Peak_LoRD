@@ -796,20 +796,17 @@ def get_args():
     # parser.add_argument('--slide_step', type=float, default=0.8, help='sliding step (min)')
 
     # YOLO & IO
-    # parser.add_argument('--model',
-    #                     default='weights/best.pt',
-    #                     help='path to peak detection model')
     parser.add_argument('--model',
-                        default="D:\\work\\peak detection\\peakLord\\Peak_LoRD\\best.pt",
+                        default='peak_lord.pt',
                         help='path to peak detection model')
     parser.add_argument('--datadir',
-                        default="D:\\work\\peak detection\\peakLord\\dataset\\")
-    # parser.add_argument('--datadir',
-    #                     default='./data/mzml')
+                        default='./data/mzml',
+                        help='directory containing input mzML files')
     parser.add_argument('--img_tmp_path',
-                        default="D:\\work\\peak detection\\peakLord\\dataset\\tmp.jpg")
+                        default='tmp.jpg',
+                        help='temporary image path used during inference')
     parser.add_argument('--save_csv', action='store_true', default=True)
-    parser.add_argument('--csv_save_dir', type=str, default="D:\\work\\peak detection\\peakLord\\csv\\",
+    parser.add_argument('--csv_save_dir', type=str, default='./csv',
                         help='directory to save csv files; default datadir/ours/csv')
     parser.add_argument('--noise_thresold', type=float, default=1000)
 

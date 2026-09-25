@@ -98,7 +98,7 @@ python train_detect_ssl.py
 - `self_train`: `False` = standard semi-supervised (labeled + unlabeled), `True` = self-training on unlabeled data only.
 
 ### 3. Semi-supervised segmentation training — `train_ssl.py`
-Same pattern as above (`task="semi_segment"`, e.g. `model="yolo11-seg.yaml"`). Edit the `overrides` dict (paths are placeholders — replace them with your own; the pretrained backbone `yolo11m_pre_new.pt` is included in the repo), then:
+Same pattern as above (`task="semi_segment"`, e.g. `model="yolo11-seg.yaml"`). Edit the `overrides` dict (paths are placeholders — replace them with your own; the pretrained backbone `pre_tf_model.pt` is included in the repo), then:
 ```bash
 cd ultralytics
 python train_ssl.py

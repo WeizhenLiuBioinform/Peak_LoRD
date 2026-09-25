@@ -17,11 +17,11 @@ from ultralytics.models.yolo.semi_detect import SemiDetectionTrainer
 overrides = dict(
     task="semi_detect",
 
-    # 学生模型：使用检测模型配置（非分割）
+    # PT模型
     # 可从 yaml 从头训练，或加载预训练 .pt 权重
     model="yolov8n.yaml",                    # 检测模型配置，或替换为你的 .pt 路径
 
-    # 教师模型（可选）：预训练权重路径，设为 None 则从学生模型复制初始化
+    # TF模型（可选）：预训练权重路径，设为 None 则从学生模型复制初始化
     # unsup_model=None,
     unsup_model=None,
 

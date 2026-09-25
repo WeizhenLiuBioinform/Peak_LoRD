@@ -150,6 +150,7 @@ weights/
 *.weights
 *.pt
 !peak_lord.pt
+!yolo11m_pre_new.pt
 *.pb
 *.onnx
 *.engine

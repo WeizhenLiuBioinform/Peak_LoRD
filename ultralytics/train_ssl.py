@@ -18,7 +18,7 @@ from ultralytics.models.yolo.semi_segment import SemiSegmentationTrainer  # 替�
 # 在一切导入之前设置环境变量
 overrides = dict(
     task="semi_segment", 
-    model="yolo11m-seg.yaml",
+    model="yolo11m_pre_new.pt",
     #unsup_model = "path/to/pretrained.pt",
     unsup_model = "path/to/teacher.pt",
     data="dataset.yaml",
